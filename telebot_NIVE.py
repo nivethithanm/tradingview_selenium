@@ -1,6 +1,6 @@
-# telebot.py
+# Setup.py
 
-from typing import Awaitable
+#from typing import Awaitable
 import random
 import sqlite3
 from telethon.sync import TelegramClient
@@ -67,20 +67,22 @@ class TelegramBot:
             await self.client.send_code_request(self.phone)
             await self.client.sign_in(self.phone,  input('Enter the code: '))
         
-    async def getUsersList(self, target_group_id, target_group_access_hash):
+    async def getUsersList(self):
+        groups = await self.getChannelsList()
         all_members = []
-        target_group_entity = InputPeerChannel(target_group_id,target_group_access_hash)    
-        print('Fetching Members...' + str(target_group_id))
-        #print(all_members)
-        all_participants = []
-        while True:
+        for i in range(len(groups)):
+            target_group=groups[i]
+            target_group_entity = InputPeerChannel(target_group.id,target_group.access_hash)    
+            print('Fetching Members...' + str(target_group.id))
+            #print(all_members)
+            all_participants = []
             try:
-                all_participants = await self.client.get_participants(target_group_id, aggressive=True)
+                all_participants = await self.client.get_participants(target_group, aggressive=True)
             except:
                 continue
-        #all_members.append(all_participants)
+            #all_members.append(all_participants)
             
-        for user in all_participants:
+            for user in all_participants:
                     if user.username:
                         username= user.username
                     else:
@@ -111,14 +113,58 @@ class TelegramBot:
         
         return all_members
      
-    
+    async def getChannelsList(self):
+        chats = []
+        last_date = None
+        chunk_size = 200
+        groups=[]
+         
+        result = await self.client(GetDialogsRequest(
+                     offset_date=last_date,
+                     offset_id=0,
+                     offset_peer=InputPeerEmpty(),
+                     limit=chunk_size,
+                     hash = 0
+                 ))
+        chats.extend(result.chats)
+        
+        for chat in chats:
+                try:
+                    if chat.megagroup== True:
+                        groups.append(chat)
+                except:
+                    continue
+        
+        input_file = 'groups.csv'
+        with open(input_file,'w+',encoding='UTF-8') as f:
+            writer = csv.writer(f,delimiter=",",lineterminator="\n")
+            csv_dict = [row for row in csv.DictReader(f)]
+            if len(csv_dict) == 0:
+                writer.writerow(['group name','group id', 'access hash'])
+            for group in groups:
+                if group.title:
+                    groupname = group.title
+                else:
+                    groupname = ""
+                if group.id:
+                    group_id = group.id
+                else:
+                    group_id = ""
+                if group.access_hash:
+                    access_hash = group.access_hash
+                else:
+                    access_hash = ""
+                writer.writerow([groupname,group_id,access_hash])   
+   
+        return groups
+        
     async def addMembers(self,group_id, group_access_hash):
         
         #users = self.getUsersList()
 
         users = []
         
-        input_file = 'members.csv'
+        input_file = 'members2.csv'
         with open(input_file, 'r+', encoding='UTF-8') as f:
             rows = csv.reader(f,delimiter=",",lineterminator="\n")
             next(rows, None)
@@ -157,24 +203,21 @@ class TelegramBot:
                 
 async def telebot():
     # Access variables Definition
-    api_id = API_ID
-    api_hash = 'API_HASH'
-    phone = 'Phone_number_with_country_code_with_a_plus' #Eg +919876543210 for Indian number
+    api_id = 2420653
+    api_hash = 'cf6d7d2c4b0c95e7ffe555079871e579'
+    phone = '+918124992738'
 
     # Group id
     #group_id = GROUP_ID 
     #group_access_hash = 'GROUP_HASH'
-    
-    # Target group from which you want the members
-    target_group_id = TARGET_GROUP_ID #Target group id
-    target_group_access_hash = 'TARGET_GROUP_ACCESS_HASH'
 
     # Function Calls
     telegrambot = TelegramBot(api_id, api_hash, phone)
     await telegrambot.startClient()
-    #await telegrambot.getChannelsList()
-    await telegrambot.getUsersList(target_group_id,target_group_access_hash)
-    await telegrambot.addMembers(group_id, group_access_hash)
+    await telegrambot.getChannelsList()
+    #await telegrambot.getUsersList()
+    #await telegrambot.addMembers(group_id, group_access_hash)
 
 loop = asyncio.get_event_loop()
 loop.run_until_complete(telebot())
+#loop.close()
