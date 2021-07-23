@@ -1,3 +1,4 @@
+import threading
 import os
 from selenium import webdriver
 import time
@@ -21,16 +22,19 @@ BotFunctions: Payload handling and delegation of TelegramBot's functions
 class TradingViewBot:
     
     def __init__(self, val):
-        self.bot = webdriver.Firefox()
+        if(val == 0):
+            self.bot = webdriver.Firefox()
+        if(val == 1):
+            self.bot = webdriver.Chrome(executable_path = 'CHROMEDRIVER_PATH_HERE')
         
         # FOR /marvel
         if(val == 0):
             # Update url id
-            self.chart = 'T0Vm0Iiw'
+            self.chart = 'g5uZs5rR'
         # FOR /matrix
         elif(val == 1):
             # Update url id
-            self.chart = 'T0Vm0Iiw'
+            self.chart = 'g5uZs5rR'
 
     def login(self,symbol = 'NASDAQ:AMZN',interval = 'D',theme = 'light'):
         # Opens the Firefox with the following url
@@ -40,14 +44,17 @@ class TradingViewBot:
     
     def checkLogin(self,username,password):
         # Enters email_id and password and logs into your account
-        self.bot.find_element_by_class_name('js-login-link').click()
-        time.sleep(2)
-        self.bot.find_element_by_class_name('tv-signin-dialog__toggle-email').click()
-        time.sleep(2)
-        self.bot.find_element_by_name('username').send_keys(username)
-        self.bot.find_element_by_name('password').send_keys(password)
-        self.bot.find_element_by_class_name('tv-button__loader').click()
-        time.sleep(10)
+        if (len(self.bot.find_elements_by_class_name('js-login-link')) == 0):
+            time.sleep(2)
+        else:
+            self.bot.find_element_by_class_name('js-login-link').click()
+            time.sleep(2)
+            self.bot.find_element_by_class_name('tv-signin-dialog__toggle-email').click()
+            time.sleep(2)
+            self.bot.find_element_by_name('username').send_keys(username)
+            self.bot.find_element_by_name('password').send_keys(password)
+            self.bot.find_element_by_class_name('tv-button__loader').click()
+        time.sleep(10) #Increase 10 to 120
     
     def getScreen(self):
         # Gets a screenshot of current Firefox screen
@@ -60,7 +67,8 @@ class TradingViewBot:
         
 def TradingBotActions(val,  symbol = "NASDAQ:NFLX", interval = "D", theme = "light"):
     # Change Mail ID and Passsword
-    username = 'EMAIL_ID'
+    
+    username = 'EMAIL'
     password = 'PASSWORD'
     instanc = TradingViewBot(val)
     instanc.login(symbol,interval,theme)
@@ -148,10 +156,11 @@ def BotFunctions(token):
                 
                 if (message != None):    
                     if (message.find('/matrix ') != -1):
-                        bot.send_picture(message,from_,0)
+                        threading.Thread(target=bot.send_picture, args = (message,from_,0)).start()
                 
                     elif (message.find('/marvel ') != -1):
-                        bot.send_picture(message,from_,1)
+                        threading.Thread(target=bot.send_picture, args = (message,from_,1)).start()
+                        #bot.send_picture(message,from_,1)
                 
                     elif (message.find('/help') != -1):
                         bot.send_message('Usage:\n\nUse this function to get plots \n/[Plot-type] [TickerSymbol] [TimeFrame](Optional) [Theme](Optional)\n\nNote: \n\n[Plot-type]: marvel, matrix\n[TimeFrame]: 1-1440 (for minutes), D (for day), M (for Month)\n[Theme]: light, dark\n', from_)
@@ -164,6 +173,8 @@ def BotFunctions(token):
 
 # Your Bot Token got from BotFather in Token variable             
 token = '1554901580:AAHs2Y559I1m1WkGSwmLPt84jdI9hT6khlc'
+threading.Thread(target=BotFunctions, args= (token,)).start()
+threading.Thread(target=BotFunctions, args= (token,)).start()
 BotFunctions(token)
 
 """
