@@ -21,16 +21,23 @@ BotFunctions: Payload handling and delegation of TelegramBot's functions
 class TradingViewBot:
     
     def __init__(self, val):
-        self.bot = webdriver.Firefox()
+        fireFoxOptions = webdriver.FirefoxOptions()
+        profile = webdriver.FirefoxProfile('/home/nivethithan/.mozilla/firefox/phwph1d8.default')
+
+        #options.add_argument("user-data-dir=C:\\Path")
+        #data_dir = get_data_dir()
+        #profile_path = os.path.join(data_dir, 'Selenium_chromium')
+        #fireFoxOptions.add_argument(f'--user-data-dir={data_dir}')
+        self.bot = webdriver.Firefox(firefox_profile=profile)
         
         # FOR /marvel
         if(val == 0):
             # Update url id
-            self.chart = 'T0Vm0Iiw'
+            self.chart = 'g5uZs5rR'
         # FOR /matrix
         elif(val == 1):
             # Update url id
-            self.chart = 'T0Vm0Iiw'
+            self.chart = 'g5uZs5rR'
 
     def login(self,symbol = 'NASDAQ:AMZN',interval = 'D',theme = 'light'):
         # Opens the Firefox with the following url
@@ -40,14 +47,17 @@ class TradingViewBot:
     
     def checkLogin(self,username,password):
         # Enters email_id and password and logs into your account
-        self.bot.find_element_by_class_name('js-login-link').click()
-        time.sleep(2)
-        self.bot.find_element_by_class_name('tv-signin-dialog__toggle-email').click()
-        time.sleep(2)
-        self.bot.find_element_by_name('username').send_keys(username)
-        self.bot.find_element_by_name('password').send_keys(password)
-        self.bot.find_element_by_class_name('tv-button__loader').click()
-        time.sleep(10)
+        if (len(self.bot.find_elements_by_class_name('js-login-link')) == 0):
+            time.sleep(2)
+        else:
+            self.bot.find_element_by_class_name('js-login-link').click()
+            time.sleep(2)
+            self.bot.find_element_by_class_name('tv-signin-dialog__toggle-email').click()
+            time.sleep(2)
+            self.bot.find_element_by_name('username').send_keys(username)
+            self.bot.find_element_by_name('password').send_keys(password)
+            self.bot.find_element_by_class_name('tv-button__loader').click()
+        time.sleep(10) #Increase 10 to 120
     
     def getScreen(self):
         # Gets a screenshot of current Firefox screen
@@ -60,8 +70,8 @@ class TradingViewBot:
         
 def TradingBotActions(val,  symbol = "NASDAQ:NFLX", interval = "D", theme = "light"):
     # Change Mail ID and Passsword
-    username = 'EMAIL_ID'
-    password = 'PASSWORD'
+    username = 'jpnivemeow@gmail.com'
+    password = 'Fuck@ll1'
     instanc = TradingViewBot(val)
     instanc.login(symbol,interval,theme)
     instanc.checkLogin(username,password)
@@ -163,7 +173,7 @@ def BotFunctions(token):
 # Driver Code --->
 
 # Your Bot Token got from BotFather in Token variable             
-token = '1554901580:AAHs2Y559I1m1WkGSwmLPt84jdI9hT6khlc'
+token = '1585200585:AAHIrCjRW3D-16dSB9NX__o00GNo4TGZcr4'
 BotFunctions(token)
 
 """

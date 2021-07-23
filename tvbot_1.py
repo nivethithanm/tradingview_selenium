@@ -21,7 +21,10 @@ BotFunctions: Payload handling and delegation of TelegramBot's functions
 class TradingViewBot:
     
     def __init__(self, val):
-        self.bot = webdriver.Firefox()
+        if(val == 0):
+            self.bot = webdriver.Firefox()
+        if(val == 1):
+            self.bot = webdriver.Chrome()
         
         # FOR /marvel
         if(val == 0):
@@ -40,14 +43,17 @@ class TradingViewBot:
     
     def checkLogin(self,username,password):
         # Enters email_id and password and logs into your account
-        self.bot.find_element_by_class_name('js-login-link').click()
-        time.sleep(2)
-        self.bot.find_element_by_class_name('tv-signin-dialog__toggle-email').click()
-        time.sleep(2)
-        self.bot.find_element_by_name('username').send_keys(username)
-        self.bot.find_element_by_name('password').send_keys(password)
-        self.bot.find_element_by_class_name('tv-button__loader').click()
-        time.sleep(10)
+        if (len(self.bot.find_elements_by_class_name('js-login-link')) == 0):
+            time.sleep(2)
+        else:
+            self.bot.find_element_by_class_name('js-login-link').click()
+            time.sleep(2)
+            self.bot.find_element_by_class_name('tv-signin-dialog__toggle-email').click()
+            time.sleep(2)
+            self.bot.find_element_by_name('username').send_keys(username)
+            self.bot.find_element_by_name('password').send_keys(password)
+            self.bot.find_element_by_class_name('tv-button__loader').click()
+        time.sleep(10) #Increase 10 to 120
     
     def getScreen(self):
         # Gets a screenshot of current Firefox screen
@@ -60,6 +66,7 @@ class TradingViewBot:
         
 def TradingBotActions(val,  symbol = "NASDAQ:NFLX", interval = "D", theme = "light"):
     # Change Mail ID and Passsword
+    
     username = 'EMAIL_ID'
     password = 'PASSWORD'
     instanc = TradingViewBot(val)
